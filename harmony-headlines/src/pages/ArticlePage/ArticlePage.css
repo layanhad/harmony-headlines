@@ -69,3 +69,23 @@
     text-align: justify;
 }
 
+.score-button{
+    margin-bottom: 1rem;
+
+}
+
+.score-button, .back-button{
+    font-size: 1rem;
+    padding: 0.8rem 2rem;
+    background-color: #2D5BD0;
+    color: white;
+    border: none;
+    border-radius: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.score-button:hover, .back-button:hover{
+    background-color: #0056b3;
+
+}

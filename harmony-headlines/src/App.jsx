@@ -4,6 +4,8 @@ import NewsPage from './pages/NewsPage/NewsPage'
 import ArticlePage from './pages/ArticlePage/ArticlePage'
 import HomePage from './pages/HomePage/HomePage';
 import NewsLayout from './components/Layout/NewsLayout';
+import { NewsProvider } from "./context/NewsContext";
+
 function App() {
   const router = createBrowserRouter([
     {
@@ -30,9 +32,10 @@ function App() {
   ])
 
   return (
-    <>
-      <RouterProvider router={router}/>
-    </>
+    <NewsProvider>
+      <RouterProvider router={router} />
+    </NewsProvider>
+
   )
 }
 

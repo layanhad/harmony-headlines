@@ -1,5 +1,5 @@
+import { API_KEY } from "./constants";
 const url = `http://api.mediastack.com/v1/news`;
-
 export function getNews() {
     const params = {
         languages: 'en',

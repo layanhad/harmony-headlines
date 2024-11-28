@@ -1,10 +1,17 @@
 import "./ArticlePage.css";
-import { useParams } from "react-router-dom";
+import { useParams,Link } from "react-router-dom";
 import  newsData  from "../../data/newsData";
+import { useContext } from "react";
+import { NewsContext } from "../../context/NewsContext";
+
 export default function ArticlePage() {
     const { id } = useParams();
-    const article = newsData.find((news) => news.id === parseInt(id));
-    return (
+    const { news, updateArticleMood } = useContext(NewsContext);
+    const article = news.find((newsItem) => newsItem.id === parseInt(id));
+
+    if (!article) return <p>Article not found.</p>;
+
+        return (
         <div className="article-page">
             <div className="article-header">
                 <img className="article-image" src={article.img} alt={article.title} />
@@ -17,6 +24,13 @@ export default function ArticlePage() {
                 </div>
                 <p className="article-source">Source: {article.source}</p>
                 <p className="article-description">{article.description}</p>
+                <p className="articale-score">sentimentScore: {article.sentimentScore}</p>
+                <button className="score-button" onClick={() => updateArticleMood(article.id)}>
+                    Make Article Kinder
+                </button>
+                <Link to="/news">
+                    <button className="back-button">Go back</button>
+                </Link>
             </div>
         </div>
     );
