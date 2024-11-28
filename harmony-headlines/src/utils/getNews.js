@@ -1,10 +1,10 @@
 import { API_KEY } from "./constants";
-const url = `https://api.mediastack.com/v1/news`;
+const url = `http://api.mediastack.com/v1/news`;
 export function getNews() {
     const params = {
         languages: 'en',
         countries: 'us,il,ae',
-        access_key: API_KEY,
+        access_key: API_KEY.toString(),
         keywords: "israel,palestine",
         limit: 10
     };

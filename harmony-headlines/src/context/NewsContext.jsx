@@ -29,7 +29,7 @@ export function NewsProvider({ children }) {
             });
             const processedNews = await Promise.all(promises);
 
-            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(processedNews));
+            localStorage.setItem(LOCAL_STORAGE_KEY.toString(), JSON.stringify(processedNews));
 
             setNews(processedNews);
         } catch (err) {
@@ -49,7 +49,7 @@ export function NewsProvider({ children }) {
             }));
             setNews(updatedNews);
 
-            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedNews));
+            localStorage.setItem(LOCAL_STORAGE_KEY.toString(), JSON.stringify(updatedNews));
         } catch (err) {
             console.error("Error analyzing sentiments:", err);
         }
@@ -78,14 +78,14 @@ export function NewsProvider({ children }) {
 
             setNews(finalNews);
 
-            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(finalNews));
+            localStorage.setItem(LOCAL_STORAGE_KEY.toString(), JSON.stringify(finalNews));
         } catch (err) {
             console.error("Error updating article mood:", err);
         }
     };
 
     useEffect(() => {
-        const savedNews = localStorage.getItem(LOCAL_STORAGE_KEY);
+        const savedNews = localStorage.getItem(LOCAL_STORAGE_KEY.toString());
         console.log("Saved news from localStorage:", savedNews);
 
 

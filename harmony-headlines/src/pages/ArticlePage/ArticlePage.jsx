@@ -28,6 +28,7 @@ export default function ArticlePage() {
                 <button className="score-button" onClick={() => updateArticleMood(article.id)}>
                     Make Article Kinder
                 </button>
+                <br></br>
                 <Link to="/news">
                     <button className="back-button">Go back</button>
                 </Link>
