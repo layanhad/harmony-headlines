@@ -1,11 +1,18 @@
 .news-page {
     display: grid;
-    grid-template-columns: repeat(auto-fit, 22rem);
+    grid-template-columns: repeat(2, 1fr); 
     gap: 1.5rem;
     padding: 2rem;
     justify-content: center;
     align-content: center;
 }
+
+@media (max-width: 600px) {
+    .news-page {
+        grid-template-columns: 1fr; 
+    }
+}
+
 
 .back-button{
     font-size: 1rem;
