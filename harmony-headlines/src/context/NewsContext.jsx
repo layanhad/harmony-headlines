@@ -1,25 +1,27 @@
 import { createContext, useState, useEffect } from "react";
-import { getNews } from "../utils/getNews";
-import { processTitleMood, changeMood } from "../utils/processNewsLLM";
-import { DEFAULT_IMG, LOCAL_STORAGE_KEY } from "../utils/constants";
+import { DEFAULT_IMG, LOCAL_STORAGE_KEY,VITE_BACKEND_URL } from "../utils/constants";
 
 export const NewsContext = createContext();
 
 export function NewsProvider({ children }) {
     const [news, setNews] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [dailyRequestCount, setDailyRequestCount] = useState(0);
 
     const fetchNews = async () => {
         setLoading(true);
         try {
-            const data = await getNews();
-            const titles = data.data.map(article => article.title);
+            const response = await fetch(`${VITE_BACKEND_URL}/news`);
+            const data = await response.json();
 
-            // Process sentiment scores with batching and rate limiting
+            if (!data || !data.data || !Array.isArray(data.data)) {
+                console.warn("Unexpected response format:", data);
+                setNews([]); 
+                return;
+            }
+    
+            const titles = data.data.map((article) => article.title);
             const sentimentScores = await analyzeTitles(titles);
 
-            // Combine processed data
             const processedNews = data.data.map((article, index) => ({
                 id: article.id || index,
                 title: article.title,
@@ -31,7 +33,6 @@ export function NewsProvider({ children }) {
                 sentimentScore: sentimentScores[index],
             }));
 
-            // Save to localStorage and state
             localStorage.setItem(LOCAL_STORAGE_KEY.toString(), JSON.stringify(processedNews));
             setNews(processedNews);
         } catch (err) {
@@ -42,48 +43,24 @@ export function NewsProvider({ children }) {
     };
 
     const analyzeTitles = async (titles) => {
-
         if (!Array.isArray(titles) || titles.length === 0) {
             console.warn("No titles to analyze.");
             return [];
         }
-    
-        const batchSize = 5; // Batch size for processing
-        const delay = 30000; // 30 seconds delay for rate limiting
-        const scores = [];
-        const sentimentCache = {}; // Cache for sentiment results
 
-        // Helper function to process a batch
-        const processBatch = async (batch) => {
-            try {
-                if (dailyRequestCount >= 50) {
-                    console.warn("Daily request limit reached. Falling back to local sentiment analysis.");
-                }
+        try {
+            const response = await fetch(`${VITE_BACKEND_URL}/analyze-mood`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ titles }),
+            });
 
-                const result = await processTitleMood(batch);
-                setDailyRequestCount((count) => count + 1); // Increment request count
-                batch.forEach((title, index) => {
-                    sentimentCache[title] = result[index]; // Cache the result
-                });
-                return result;
-            } catch (error) {
-                console.error("Error processing batch:", error);
-                return [];
-            }
-        };
-
-        // Process titles in batches
-        for (let i = 0; i < titles.length; i += batchSize) {
-            const batch = titles.slice(i, i + batchSize);
-            const batchScores = await processBatch(batch);
-            scores.push(...batchScores);
-
-            if (i + batchSize < titles.length) {
-                await new Promise((resolve) => setTimeout(resolve, delay)); // Rate limiting delay
-            }
+            const { moods } = await response.json();
+            return moods;
+        } catch (err) {
+            console.error("Error analyzing titles:", err);
+            return [];
         }
-
-        return scores;
     };
 
     const updateArticleMood = async (id) => {
@@ -91,23 +68,25 @@ export function NewsProvider({ children }) {
         if (!article) return;
 
         try {
-            const updated = await changeMood({
-                title: article.title,
-                description: article.description,
+            const response = await fetch(`${VITE_BACKEND_URL}/update-mood`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    title: article.title,
+                    description: article.description,
+                }),
             });
 
-            // Update article mood
+            const updated = await response.json();
             const updatedNews = news.map((item) =>
                 item.id === id ? { ...item, ...updated } : item
             );
 
-            // Reanalyze sentiment
-            const newScore = await processTitleMood([updated.title]);
+            const newScore = await analyzeTitles([updated.title]);
             const finalNews = updatedNews.map((item) =>
                 item.id === id ? { ...item, sentimentScore: newScore[0] } : item
             );
 
-            // Update state and localStorage
             setNews(finalNews);
             localStorage.setItem(LOCAL_STORAGE_KEY.toString(), JSON.stringify(finalNews));
         } catch (err) {
@@ -122,6 +101,7 @@ export function NewsProvider({ children }) {
         if (savedNews && savedNews !== "[]") {
             setNews(JSON.parse(savedNews));
         } else {
+            console.log("Fetching news...");
             fetchNews();
         }
     }, []);

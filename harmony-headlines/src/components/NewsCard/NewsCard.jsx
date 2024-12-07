@@ -12,7 +12,7 @@ export default function NewsCard({id,img, title, date, author,source}) {
                     <p className="news-card-source">{source}</p>
                 </div>
                 <Link to = {`/news/${id}`}>
-                     <img className="news-card-image" src={img} alt="news card" />
+                     <img className="news-card-image" src={img} alt="news image" />
                 </Link>
             </div>
     )
